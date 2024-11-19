@@ -7,12 +7,12 @@ entity datapath is
 	generic ( R : integer := 8; -- number of registers
 			Md : integer := 8; -- width of address
 			Wd : integer := 16 ); -- width of data
-	port(reset,clk,read_write,load : in STD_LOGIC;
+	port(reset,clk,read_write,load, loadSR : in STD_LOGIC;
 		 SourceSel : in UNSIGNED (1 downto 0);
 		 fixed, ExternaInput : in SIGNED (Wd-1 downto 0);
  		 address : in UNSIGNED(Md-1 downto 0); 
 		 loadsel : in INTEGER range 0 to R-1;
- 		 OPsel : in integer range 0 to 7;
+ 		 OPsel : in UNSIGNED(2 downto 0);
  		 selectA, selectB : in INTEGER range 0 to R-1;
 		 Z,N : out std_logic;
 		 ExternaOutput : out SIGNED (Wd-1 downto 0) );
@@ -55,7 +55,7 @@ begin
 			clk=>clk,
 			F=>dALU,
 			reset=>reset,
-			loadSR=>load,
+			loadSR=>loadSR,
 			Z=>Z,
 			N=>N		 
 		); 		

@@ -11,7 +11,7 @@ entity controlunit is
    port(     reset,clk,Z,N:  in STD_LOGIC;
     read_write,load,loadSR: out STD_LOGIC;
                  SourceSel: out UNSIGNED (1 downto 0);
-                    OPsel : out STD_LOGIC_VECTOR(2 downto 0);
+                    OPsel : out UNSIGNED(2 downto 0);
            selectA,selectB: out INTEGER range 0 to R-1;
                    loadsel: out INTEGER range 0 to R-1;
                    address: out UNSIGNED(Md-1 downto 0));  
@@ -22,18 +22,19 @@ architecture algo of controlunit is
 
 -- Instruction memory and loading of instructions
 
-type instructionType is array (0 to 2**Mi-1)
-		of unsigned(Wi-1 downto 0);
+type instructionType is array (0 to 2**Mi-1) of unsigned(Wi-1 downto 0);
 
 -- The following code involves all five kinds of instrucitions
 constant instructions: instructionType :=
-   (x"8000",  -- R0 <= dM[0]    memREAD
-    x"8101",  -- R1 <= dM[1]    memREAD
-    x"1C01",  -- R12 <= R0-R1   ALUop 
-    x"C405",  -- JPos 5         JUMP conditional (N flag)
-    x"1C10",  -- R12 <= R1-R0   ALUop
-    x"9C03",  -- dM[3] <= R12   memWRITE
-    x"F000",  -- STOP           exception
+--1) put 05FC and 0A9B NEVER MIND IGNORE THIS LINE
+	(x"9010",  --dM[3] <= R12   memWRITE
+     x"9120",  -- R0 <= dM[0]    memREAD
+     x"8101",  -- R1 <= dM[1]    memREAD
+--    x"1C01",  -- R12 <= R0-R1   ALUop 
+--    x"C405",  -- JPos 5         JUMP conditional (N flag)
+--    x"1C10",  -- R12 <= R1-R0   ALUop
+--    x"9C03",  -- dM[3] <= R12   memWRITE
+--    x"F000",  -- STOP           exception
     others => x"F000");
 
 
@@ -91,24 +92,25 @@ begin
 			end case;
 		end if;
 	end if;
-end process;  
+end process; 
+ 	address <= IR(7 downto 0);
+	read_write <= '0' when state = writemem else '1';
+	with state select
+	SourceSel <= 
+	"00" when Aluop,
+	"10" when writemem,
+	"11" when readmem,
+	"01" when others;
+ 	loadsel <= to_integer( IR(11 downto 8) );
+ 	selectA <= to_integer( IR(7 downto 4) );
+ 	selectB <= to_integer( IR(11 downto 8) ) when state = writemem else to_integer( IR(3 downto 0) );
+ 	load <= '1' when (state = ALUop or state = readmem) else '0';
+ 	OPsel <= ( IR(14 downto 12) );
+ 	loadSR <='1' when state = ALUop else '0';
 end algo;
 
-
--- Commands to datapath
--- addresss <= IR(7 downto 0);
--- read_write <= '0' when state = writemem else '1';
---SourceSel <= 0 when state = ALUop else 3;
--- loadsel <= to_integer( IR(11 downto 8) );
--- selectA <= to_integer( IR(7 downto 4) );
--- selectB <= to_integer( IR(11 downto 8) ) when state = writemem
--- else to_integer( IR(3 downto 0) );
--- load <= '1' when (state = ALUop or state = readmem)
--- else '0';
--- OPsel <= to_integer( IR(14 downto 12) );
--- loadSR <='1' when state = ALUop else '0';
---
---
-
+--																																					  ourxdh
+--																																			fhdhfdhdfhdfhdfhdfhdfhdfhdfhdfh
+																																					 
 
 				   
